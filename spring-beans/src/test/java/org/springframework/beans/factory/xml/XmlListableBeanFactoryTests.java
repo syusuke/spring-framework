@@ -45,8 +45,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class XmlListableBeanFactoryTests extends AbstractListableBeanFactoryTests {
 
+	/**
+	 * parent
+	 */
 	private DefaultListableBeanFactory parent;
 
+	/**
+	 * sub factory
+	 */
 	private DefaultListableBeanFactory factory;
 
 
@@ -66,7 +72,10 @@ public class XmlListableBeanFactoryTests extends AbstractListableBeanFactoryTest
 		bd2.setPropertyValues(new MutablePropertyValues(map));
 		parent.registerBeanDefinition("rod", bd2);
 
+		// 指定 parent
 		this.factory = new DefaultListableBeanFactory(parent);
+
+		// load test.xml bean
 		new XmlBeanDefinitionReader(this.factory).loadBeanDefinitions(new ClassPathResource("test.xml", getClass()));
 
 		this.factory.addBeanPostProcessor(new BeanPostProcessor() {
@@ -80,6 +89,7 @@ public class XmlListableBeanFactoryTests extends AbstractListableBeanFactoryTest
 				}
 				return bean;
 			}
+
 			@Override
 			public Object postProcessAfterInitialization(Object bean, String name) throws BeansException {
 				return bean;

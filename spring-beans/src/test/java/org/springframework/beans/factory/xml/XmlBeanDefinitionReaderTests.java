@@ -19,6 +19,7 @@ package org.springframework.beans.factory.xml;
 import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.parsing.*;
 import org.xml.sax.InputSource;
 
 import org.springframework.beans.factory.BeanDefinitionStoreException;
@@ -47,6 +48,10 @@ public class XmlBeanDefinitionReaderTests {
 		new XmlBeanDefinitionReader(registry).setDocumentReaderClass(DefaultBeanDefinitionDocumentReader.class);
 	}
 
+	/**
+	 * 加载 xml 文件, 原文件位置在:
+	 * spring-framework\spring-beans\src\test\resources\org\springframework\beans\factory\xml\test.xml
+	 */
 	@Test
 	public void withOpenInputStream() {
 		SimpleBeanDefinitionRegistry registry = new SimpleBeanDefinitionRegistry();
@@ -55,6 +60,14 @@ public class XmlBeanDefinitionReaderTests {
 				new XmlBeanDefinitionReader(registry).loadBeanDefinitions(resource));
 	}
 
+	/**
+	 * BeanDefinitionRegistry Bean容器
+	 * BeanDefinitionReader Bean读取器,这里为XML. XmlBeanDefinitionReader
+	 * 从文件读取Bean,并且解析,注册到 BeanDefinitionRegistry 容器
+	 * {@see org.springframework.beans.factory.support.BeanDefinitionReader#loadBeanDefinitions(org.springframework.core.io.Resource)}
+	 * <p>
+	 * 加载Test的文件的Bean
+	 */
 	@Test
 	public void withOpenInputStreamAndExplicitValidationMode() {
 		SimpleBeanDefinitionRegistry registry = new SimpleBeanDefinitionRegistry();
@@ -65,14 +78,46 @@ public class XmlBeanDefinitionReaderTests {
 		testBeanDefinitions(registry);
 	}
 
+	/**
+	 * 导入文件
+	 * import.xml
+	 * spring-framework\spring-beans\src\test\resources\org\springframework\beans\factory\xml\import.xml
+	 */
 	@Test
 	public void withImport() {
 		SimpleBeanDefinitionRegistry registry = new SimpleBeanDefinitionRegistry();
 		Resource resource = new ClassPathResource("import.xml", getClass());
-		new XmlBeanDefinitionReader(registry).loadBeanDefinitions(resource);
+		final XmlBeanDefinitionReader xmlBeanDefinitionReader = new XmlBeanDefinitionReader(registry);
+
+		// 回调 原来为  org.springframework.beans.factory.parsing.EmptyReaderEventListener
+		xmlBeanDefinitionReader.setEventListener(new ReaderEventListener() {
+			@Override
+			public void defaultsRegistered(DefaultsDefinition defaultsDefinition) {
+				System.out.println("defaultsDefinition = " + defaultsDefinition);
+			}
+
+			@Override
+			public void componentRegistered(ComponentDefinition componentDefinition) {
+				System.out.println("componentDefinition = " + componentDefinition);
+			}
+
+			@Override
+			public void aliasRegistered(AliasDefinition aliasDefinition) {
+				System.out.println("aliasDefinition = " + aliasDefinition);
+			}
+
+			@Override
+			public void importProcessed(ImportDefinition importDefinition) {
+				System.out.println("importDefinition = " + importDefinition);
+			}
+		});
+		xmlBeanDefinitionReader.loadBeanDefinitions(resource);
 		testBeanDefinitions(registry);
 	}
 
+	/**
+	 * spring-framework\spring-beans\src\test\resources\org\springframework\beans\factory\xml\importPattern.xml
+	 */
 	@Test
 	public void withWildcardImport() {
 		SimpleBeanDefinitionRegistry registry = new SimpleBeanDefinitionRegistry();
