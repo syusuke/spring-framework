@@ -289,6 +289,7 @@ public class ContextLoader {
 						ApplicationContext parent = loadParentContext(servletContext);
 						cwac.setParent(parent);
 					}
+					// 配置容器
 					configureAndRefreshWebApplicationContext(cwac, servletContext);
 				}
 			}
@@ -330,10 +331,12 @@ public class ContextLoader {
 	 */
 	protected WebApplicationContext createWebApplicationContext(ServletContext sc) {
 		Class<?> contextClass = determineContextClass(sc);
+		// 必须子类
 		if (!ConfigurableWebApplicationContext.class.isAssignableFrom(contextClass)) {
 			throw new ApplicationContextException("Custom context class [" + contextClass.getName() +
 					"] is not of type [" + ConfigurableWebApplicationContext.class.getName() + "]");
 		}
+		// 创建Web容器
 		return (ConfigurableWebApplicationContext) BeanUtils.instantiateClass(contextClass);
 	}
 
@@ -347,6 +350,7 @@ public class ContextLoader {
 	 */
 	protected Class<?> determineContextClass(ServletContext servletContext) {
 		String contextClassName = servletContext.getInitParameter(CONTEXT_CLASS_PARAM);
+		// 在ServletContext中配置了使用 CONTEXT_CLASS
 		if (contextClassName != null) {
 			try {
 				return ClassUtils.forName(contextClassName, ClassUtils.getDefaultClassLoader());
@@ -357,6 +361,7 @@ public class ContextLoader {
 			}
 		}
 		else {
+			// 使用默认 contextClass
 			contextClassName = defaultStrategies.getProperty(WebApplicationContext.class.getName());
 			try {
 				return ClassUtils.forName(contextClassName, ContextLoader.class.getClassLoader());
@@ -383,6 +388,7 @@ public class ContextLoader {
 			}
 		}
 
+		// 设置ServletContext以及配置文件的位置参数
 		wac.setServletContext(sc);
 		String configLocationParam = sc.getInitParameter(CONFIG_LOCATION_PARAM);
 		if (configLocationParam != null) {
@@ -398,6 +404,8 @@ public class ContextLoader {
 		}
 
 		customizeContext(sc, wac);
+
+		// 启动容器的初始化
 		wac.refresh();
 	}
 
